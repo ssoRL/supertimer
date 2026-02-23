@@ -7,6 +7,6 @@ interface RunningTimerProps {
 export function RunningTimer({ name, duration, total }: RunningTimerProps): preact.JSX.Element {
   return <div className="running-timer">
     <div className="running-timer-name">{name}</div>
-    <div className="running-timer-progress">{Math.round(duration)} of {total}</div>
+    <div className="running-timer-progress">{duration.toFixed(2)} of {total.toFixed(2)}</div>
   </div>;
 }
