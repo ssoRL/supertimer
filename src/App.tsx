@@ -1,4 +1,5 @@
 import { Timer } from "./Timer";
+import { RunningTimer } from "./RunningTimer";
 import { useEffect, useState } from 'preact/hooks';
 import './App.css';
 
@@ -42,6 +43,17 @@ export function App(): preact.JSX.Element {
     return () => clearInterval(timer);
   }, [progress == null]);
 
+  if (progress !== null) {
+    const currentTimer = timers[progress.timer];
+    return <div className="app">
+      <RunningTimer
+        name={currentTimer.name}
+        duration={progress.duration}
+        total={currentTimer.duration}
+      />
+    </div>;
+  }
+
   return <div className="app">
     <div className="timers">
       {timers.map((timer, index) => (
@@ -59,8 +71,6 @@ export function App(): preact.JSX.Element {
             newTimers[index] = { ...newTimers[index], duration: newDuration };
             setTimers(newTimers);
           }}
-          progress={progress?.timer === index ? progress.duration : null}
-          disabled={progress !== null}
         />
       ))}
     </div>

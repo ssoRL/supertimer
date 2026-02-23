@@ -41,3 +41,20 @@ body {
   gap: 0.5rem;
   margin-top: 1rem;
 }
+
+.running-timer {
+  min-height: 100vh;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.running-timer-name {
+  font-size: 2rem;
+}
+
+.running-timer-progress {
+  font-size: 1.25rem;
+}
