@@ -1,5 +1,6 @@
 import { Timer } from "./Timer";
 import { useEffect, useState } from 'preact/hooks';
+import './App.css';
 
 type Progress = {
   timer: number;
@@ -41,35 +42,39 @@ export function App(): preact.JSX.Element {
     return () => clearInterval(timer);
   }, [progress == null]);
 
-  return <div>
-    {timers.map((timer, index) => (
-      <Timer
-        key={index}
-        name={timer.name}
-        setName={(newName) => {
-          const newTimers = [...timers];
-          newTimers[index] = { ...newTimers[index], name: newName };
-          setTimers(newTimers);
-        }}
-        duration={timer.duration}
-        setDuration={(newDuration) => {
-          const newTimers = [...timers];
-          newTimers[index] = { ...newTimers[index], duration: newDuration };
-          setTimers(newTimers);
-        }}
-        progress={progress?.timer === index ? progress.duration : null}
-        disabled={progress !== null}
-      />
-    ))}
-    <button
-      onClick={() => setTimers([...timers, { name: `Timer ${timers.length + 1}`, duration: 4 }])}
-    >
-      Add Timer
-    </button>
-    <button
-      onClick={() => setProgress({ timer: 0, duration: 0 })}
-    >
-     Start
-    </button>
+  return <div className="app">
+    <div className="timers">
+      {timers.map((timer, index) => (
+        <Timer
+          key={index}
+          name={timer.name}
+          setName={(newName) => {
+            const newTimers = [...timers];
+            newTimers[index] = { ...newTimers[index], name: newName };
+            setTimers(newTimers);
+          }}
+          duration={timer.duration}
+          setDuration={(newDuration) => {
+            const newTimers = [...timers];
+            newTimers[index] = { ...newTimers[index], duration: newDuration };
+            setTimers(newTimers);
+          }}
+          progress={progress?.timer === index ? progress.duration : null}
+          disabled={progress !== null}
+        />
+      ))}
+    </div>
+    <div className="controls">
+      <button
+        onClick={() => setTimers([...timers, { name: `Timer ${timers.length + 1}`, duration: 4 }])}
+      >
+        Add Timer
+      </button>
+      <button
+        onClick={() => setProgress({ timer: 0, duration: 0 })}
+      >
+      Start
+      </button>
+    </div>
   </div>;
 }

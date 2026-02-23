@@ -9,11 +9,11 @@ interface TimerProps {
 
 export function Timer({ name, setName, duration, setDuration, progress, disabled }: TimerProps): preact.JSX.Element {
     if (progress !== null) {
-        return <div>
+        return <div className="timer">
             {name}: {Math.round(progress)}s / {duration}s
         </div>;
     }
-    return <div>
+    return <div className="timer">
         <input
             type="text"
             value={name}
