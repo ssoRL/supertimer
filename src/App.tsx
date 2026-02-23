@@ -6,8 +6,13 @@ type Progress = {
   duration: number;
 }
 
+type TimerConfig = {
+  name: string;
+  duration: number;
+}
+
 export function App(): preact.JSX.Element {
-  const [durations, setDurations] = useState<number[]>([4]);
+  const [timers, setTimers] = useState<TimerConfig[]>([{ name: 'Timer 1', duration: 4 }]);
   const [progress, setProgress] = useState<Progress | null>(null);
 
   useEffect(() => {
@@ -16,10 +21,10 @@ export function App(): preact.JSX.Element {
     }
 
     const startTime = Date.now();
-    const timerStarts = durations.reduce<number[]>(
-      (starts, duration) => {
+    const timerStarts = timers.reduce<number[]>(
+      (starts, timer) => {
         const lastStart = starts.length > 0 ? starts[starts.length - 1] : 0;
-        return [...starts, lastStart + duration];
+        return [...starts, lastStart + timer.duration];
       },
       []
     );
@@ -37,21 +42,27 @@ export function App(): preact.JSX.Element {
   }, [progress == null]);
 
   return <div>
-    {durations.map((duration, index) => (
+    {timers.map((timer, index) => (
       <Timer
         key={index}
-        duration={duration}
+        name={timer.name}
+        setName={(newName) => {
+          const newTimers = [...timers];
+          newTimers[index] = { ...newTimers[index], name: newName };
+          setTimers(newTimers);
+        }}
+        duration={timer.duration}
         setDuration={(newDuration) => {
-          const newDurations = [...durations];
-          newDurations[index] = newDuration;
-          setDurations(newDurations);
+          const newTimers = [...timers];
+          newTimers[index] = { ...newTimers[index], duration: newDuration };
+          setTimers(newTimers);
         }}
         progress={progress?.timer === index ? progress.duration : null}
         disabled={progress !== null}
       />
     ))}
     <button
-      onClick={() => setDurations([...durations, 4])}
+      onClick={() => setTimers([...timers, { name: `Timer ${timers.length + 1}`, duration: 4 }])}
     >
       Add Timer
     </button>

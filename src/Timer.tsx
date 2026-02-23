@@ -1,17 +1,25 @@
 interface TimerProps {
+    name: string;
+    setName: (name: string) => void;
     duration: number;
     setDuration: (duration: number) => void;
     progress: number | null;
     disabled?: boolean;
 }
 
-export function Timer({ duration, setDuration, progress, disabled }: TimerProps): preact.JSX.Element {
+export function Timer({ name, setName, duration, setDuration, progress, disabled }: TimerProps): preact.JSX.Element {
     if (progress !== null) {
         return <div>
-            {Math.round(progress)}s / {duration}s
+            {name}: {Math.round(progress)}s / {duration}s
         </div>;
     }
     return <div>
+        <input
+            type="text"
+            value={name}
+            onInput={e => setName(e.currentTarget.value)}
+            disabled={disabled}
+        />
         <input
             type="number"
             value={duration}
