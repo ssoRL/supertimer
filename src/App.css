@@ -56,7 +56,18 @@ body {
 
   .progress {
     font-size: 1.25rem;
+  }
+}
+
+.fixed-width-number {
+  display: inline-flex;
+  
+  .number {
     text-transform: full-width;
     letter-spacing: -25%;
+  }
+
+  .decimal {
+    transform: translate(50%, 7.5%);
   }
 }
