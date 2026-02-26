@@ -49,14 +49,14 @@ body {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-}
 
-.running-timer-name {
-  font-size: 2rem;
-}
+  .name {
+    font-size: 2rem;
+  }
 
-.running-timer-progress {
-  font-size: 1.25rem;
-  text-transform: full-width;
-  letter-spacing: -25%;
+  .progress {
+    font-size: 1.25rem;
+    text-transform: full-width;
+    letter-spacing: -25%;
+  }
 }
