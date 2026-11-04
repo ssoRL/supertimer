@@ -3,11 +3,6 @@ import { RunningTimer } from "./RunningTimer";
 import { useEffect, useState } from 'preact/hooks';
 import './App.css';
 
-type Progress = {
-  timer: number;
-  duration: number;
-}
-
 type TimerConfig = {
   name: string;
   duration: number;
@@ -15,41 +10,59 @@ type TimerConfig = {
 
 export function App(): preact.JSX.Element {
   const [timers, setTimers] = useState<TimerConfig[]>([{ name: 'Timer 1', duration: 4 }]);
-  const [progress, setProgress] = useState<Progress | null>(null);
+  // Total seconds elapsed across all timers; null when not running.
+  const [elapsed, setElapsed] = useState<number | null>(null);
+  const [paused, setPaused] = useState(false);
+
+  const timerEnds = timers.reduce<number[]>(
+    (ends, timer) => [...ends, (ends.length > 0 ? ends[ends.length - 1] : 0) + timer.duration],
+    []
+  );
+  const totalDuration = timerEnds.length > 0 ? timerEnds[timerEnds.length - 1] : 0;
 
   useEffect(() => {
-    if (progress === null) {
+    if (elapsed === null || paused) {
       return;
     }
 
-    const startTime = Date.now();
-    const timerStarts = timers.reduce<number[]>(
-      (starts, timer) => {
-        const lastStart = starts.length > 0 ? starts[starts.length - 1] : 0;
-        return [...starts, lastStart + timer.duration];
-      },
-      []
-    );
-    const timer = setInterval(() => {
-      const elapsed = (Date.now() - startTime) / 1000;
-      const currentTimer = timerStarts.findIndex(start => start > elapsed);
-      if (currentTimer === -1) {
-        clearInterval(timer);
-        setProgress(null);
+    // Resume from wherever we left off.
+    const startTime = Date.now() - elapsed * 1000;
+    const interval = setInterval(() => {
+      const newElapsed = (Date.now() - startTime) / 1000;
+      if (newElapsed >= totalDuration) {
+        clearInterval(interval);
+        setElapsed(null);
       } else {
-        setProgress({ timer: currentTimer, duration: currentTimer > 0 ? elapsed - timerStarts[currentTimer - 1] : elapsed });
+        // Preact runs effect cleanups after paint, so this interval can still
+        // fire after Cancel; don't resurrect a cancelled run.
+        setElapsed(prev => prev === null ? null : newElapsed);
       }
     }, 5);
-    return () => clearInterval(timer);
-  }, [progress == null]);
+    return () => clearInterval(interval);
+  }, [elapsed === null, paused]);
 
-  if (progress !== null) {
-    const currentTimer = timers[progress.timer];
+  const start = () => {
+    setPaused(false);
+    setElapsed(0);
+  };
+
+  const cancel = () => {
+    setPaused(false);
+    setElapsed(null);
+  };
+
+  if (elapsed !== null) {
+    const timerIndex = Math.max(0, timerEnds.findIndex(end => end > elapsed));
+    const currentTimer = timers[timerIndex];
+    const timerElapsed = timerIndex > 0 ? elapsed - timerEnds[timerIndex - 1] : elapsed;
     return <div className="app">
       <RunningTimer
         name={currentTimer.name}
-        duration={progress.duration}
+        duration={timerElapsed}
         total={currentTimer.duration}
+        paused={paused}
+        onTogglePause={() => setPaused(!paused)}
+        onCancel={cancel}
       />
     </div>;
   }
@@ -81,7 +94,7 @@ export function App(): preact.JSX.Element {
         Add Timer
       </button>
       <button
-        onClick={() => setProgress({ timer: 0, duration: 0 })}
+        onClick={start}
       >
       Start
       </button>
