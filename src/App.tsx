@@ -1,6 +1,7 @@
 import { Timer } from "./Timer";
 import { RunningTimer } from "./RunningTimer";
 import { useEffect, useState } from 'preact/hooks';
+import { initAudio, pauseTicking, startTicking, stopTicking } from './sounds';
 import './App.css';
 
 type TimerConfig = {
@@ -41,7 +42,22 @@ export function App(): preact.JSX.Element {
     return () => clearInterval(interval);
   }, [elapsed === null, paused]);
 
-  const start = () => {
+  // Drive the tick/tock from run state; the beats themselves live on the audio clock.
+  useEffect(() => {
+    if (elapsed === null) {
+      stopTicking();
+    } else if (paused) {
+      pauseTicking();
+    } else {
+      startTicking(elapsed, totalDuration);
+    }
+  }, [elapsed === null, paused]);
+
+  useEffect(() => stopTicking, []);
+
+  const start = async () => {
+    // Must run inside the click handler so the browser allows audio.
+    await initAudio();
     setPaused(false);
     setElapsed(0);
   };
