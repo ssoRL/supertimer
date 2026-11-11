@@ -1,7 +1,7 @@
 import { Timer } from "./Timer";
 import { RunningTimer } from "./RunningTimer";
 import { useEffect, useState } from 'preact/hooks';
-import { initAudio, pauseTicking, startTicking, stopTicking } from './sounds';
+import { finishTicking, initAudio, pauseTicking, startTicking, stopTicking } from './sounds';
 import './App.css';
 
 type TimerConfig = {
@@ -32,6 +32,7 @@ export function App(): preact.JSX.Element {
       const newElapsed = (Date.now() - startTime) / 1000;
       if (newElapsed >= totalDuration) {
         clearInterval(interval);
+        finishTicking();
         setElapsed(null);
       } else {
         // Preact runs effect cleanups after paint, so this interval can still
@@ -42,14 +43,14 @@ export function App(): preact.JSX.Element {
     return () => clearInterval(interval);
   }, [elapsed === null, paused]);
 
-  // Drive the tick/tock from run state; the beats themselves live on the audio clock.
+  // Drive the sounds from run state; the beats themselves live on the audio clock.
   useEffect(() => {
     if (elapsed === null) {
       stopTicking();
     } else if (paused) {
       pauseTicking();
     } else {
-      startTicking(elapsed, totalDuration);
+      startTicking(elapsed, timerEnds);
     }
   }, [elapsed === null, paused]);
 
