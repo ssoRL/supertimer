@@ -1,16 +1,16 @@
 import { Timer } from "./Timer";
 import { RunningTimer } from "./RunningTimer";
+import { LoadTimers } from "./LoadTimers";
 import { useEffect, useState } from 'preact/hooks';
 import { finishTicking, initAudio, pauseTicking, startTicking, stopTicking } from './sounds';
+import { deleteTimerSet, loadTimerSets, saveTimerSet, type TimerConfig } from './storage';
 import './App.css';
 
-type TimerConfig = {
-  name: string;
-  duration: number;
-}
-
 export function App(): preact.JSX.Element {
+  const [setName, setSetName] = useState('');
   const [timers, setTimers] = useState<TimerConfig[]>([{ name: 'Timer 1', duration: 4 }]);
+  const [savedSets, setSavedSets] = useState(loadTimerSets);
+  const [showingLoad, setShowingLoad] = useState(false);
   // Total seconds elapsed across all timers; null when not running.
   const [elapsed, setElapsed] = useState<number | null>(null);
   const [paused, setPaused] = useState(false);
@@ -68,6 +68,31 @@ export function App(): preact.JSX.Element {
     setElapsed(null);
   };
 
+  const trimmedSetName = setName.trim();
+  const savedMatch = savedSets.find(set => set.name === trimmedSetName);
+  const isSaved = savedMatch !== undefined
+    && JSON.stringify(savedMatch.timers) === JSON.stringify(timers);
+
+  const save = () => {
+    setSetName(trimmedSetName);
+    setSavedSets(saveTimerSet(trimmedSetName, timers));
+  };
+
+  if (showingLoad) {
+    return <div className="app">
+      <LoadTimers
+        timerSets={savedSets}
+        onLoad={set => {
+          setSetName(set.name);
+          setTimers(set.timers);
+          setShowingLoad(false);
+        }}
+        onDelete={set => setSavedSets(deleteTimerSet(set.name))}
+        onBack={() => setShowingLoad(false)}
+      />
+    </div>;
+  }
+
   if (elapsed !== null) {
     const timerIndex = Math.max(0, timerEnds.findIndex(end => end > elapsed));
     const currentTimer = timers[timerIndex];
@@ -85,6 +110,13 @@ export function App(): preact.JSX.Element {
   }
 
   return <div className="app">
+    <input
+      className="set-name-input"
+      type="text"
+      placeholder="Timer set name"
+      value={setName}
+      onInput={e => setSetName(e.currentTarget.value)}
+    />
     <div className="timers">
       {timers.map((timer, index) => (
         <Timer
@@ -114,6 +146,21 @@ export function App(): preact.JSX.Element {
         onClick={start}
       >
       Start
+      </button>
+    </div>
+    <div className="controls">
+      <button
+        onClick={save}
+        disabled={trimmedSetName === '' || isSaved}
+        title={trimmedSetName === '' ? 'Name this timer set to save it' : undefined}
+      >
+        {isSaved ? 'Saved' : 'Save'}
+      </button>
+      <button
+        onClick={() => setShowingLoad(true)}
+        disabled={savedSets.length === 0}
+      >
+        Load
       </button>
     </div>
   </div>;

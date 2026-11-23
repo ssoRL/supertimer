@@ -32,8 +32,14 @@ body {
   font-family: inherit;
 }
 
-.timers {
+.set-name-input {
   margin-top: 0.5rem;
+  font-size: 1.25rem;
+  text-align: center;
+}
+
+.timers {
+  margin-top: 0.75rem;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -52,6 +58,40 @@ body {
   justify-content: center;
   gap: var(--controls-gap);
   margin-top: var(--controls-margin);
+}
+
+.load-timers {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+
+  ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  li {
+    display: flex;
+    gap: var(--controls-gap);
+  }
+
+  .load-set {
+    flex: 1;
+    display: flex;
+    justify-content: space-between;
+    gap: 2rem;
+    font-size: 1rem;
+    padding: 0.5rem 0.75rem;
+    text-align: left;
+  }
+
+  .set-summary {
+    opacity: 0.6;
+  }
 }
 
 .running-timer {
