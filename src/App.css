@@ -5,8 +5,19 @@
   font-style: normal;
 }
 
+:root {
+  --controls-margin: 1rem;
+  --controls-gap: 0.5rem;
+
+  /* Fixed-width number cells, in em of the number's font size. Orbitron's
+     widest digits are 0.83em. */
+  --digit-width: 0.85;
+  --decimal-width: 0.35;
+}
+
 body {
   font-family: 'Orbitron', sans-serif;
+  margin: 0;
 }
 
 .app {
@@ -22,6 +33,7 @@ body {
 }
 
 .timers {
+  margin-top: 0.5rem;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -38,36 +50,83 @@ body {
 .controls {
   display: flex;
   justify-content: center;
-  gap: 0.5rem;
-  margin-top: 1rem;
+  gap: var(--controls-gap);
+  margin-top: var(--controls-margin);
 }
 
 .running-timer {
-  min-height: 100vh;
+  --screen-padding: 1rem;
+  --line-height: 1.25;
+  --name-size: 2rem;
+  --total-size: 1.5rem;
+  --button-height: 2rem;
+
+  /* Fraction of the screen width a 3-digit countdown ("123.4") fills. */
+  --remaining-fill: 0.94;
+  --remaining-width-em: calc(4 * var(--digit-width) + var(--decimal-width));
+
+  /* Vertical space taken by everything except the countdown. */
+  --other-height: calc(
+    2 * var(--screen-padding)
+    + (var(--name-size) + var(--total-size)) * var(--line-height)
+    + var(--controls-margin)
+    + var(--button-height)
+  );
+
+  height: 100vh;
+  height: 100dvh;
+  padding: var(--screen-padding) 0;
+  box-sizing: border-box;
+  overflow: hidden;
   width: 100%;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
+  line-height: var(--line-height);
 
   .name {
-    font-size: 2rem;
+    font-size: var(--name-size);
   }
 
-  .progress {
-    font-size: 1.25rem;
+  .remaining {
+    /* As wide as --remaining-fill allows, but never so tall that the name,
+       total and controls get pushed off screen. */
+    font-size: min(
+      100vw * var(--remaining-fill) / var(--remaining-width-em),
+      100vh - var(--other-height)
+    );
+    font-size: min(
+      100vw * var(--remaining-fill) / var(--remaining-width-em),
+      100dvh - var(--other-height)
+    );
+    line-height: 1;
+    white-space: nowrap;
+  }
+
+  .total {
+    font-size: var(--total-size);
+  }
+
+  .controls button {
+    height: var(--button-height);
   }
 }
 
 .fixed-width-number {
   display: inline-flex;
   
-  .number {
-    text-transform: full-width;
-    letter-spacing: -25%;
+  .digit,
+  .decimal {
+    display: inline-block;
+    text-align: center;
+  }
+
+  .digit {
+    width: calc(var(--digit-width) * 1em);
   }
 
   .decimal {
-    transform: translate(50%, 7.5%);
+    width: calc(var(--decimal-width) * 1em);
   }
 }
