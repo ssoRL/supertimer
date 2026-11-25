@@ -7,10 +7,14 @@ import { deleteTimer, loadTimers, saveTimer, type SegmentConfig } from './storag
 import './App.css';
 
 export function App(): preact.JSX.Element {
-  const [timerName, setTimerName] = useState('');
-  const [segments, setSegments] = useState<SegmentConfig[]>([{ name: 'Segment 1', duration: 4 }]);
   const [savedTimers, setSavedTimers] = useState(loadTimers);
-  const [showingLoad, setShowingLoad] = useState(false);
+  // On page load: open the only saved timer, or let the user pick if there are several.
+  const onlyTimer = savedTimers.length === 1 ? savedTimers[0] : undefined;
+  const [timerName, setTimerName] = useState(onlyTimer?.name ?? '');
+  const [segments, setSegments] = useState<SegmentConfig[]>(
+    onlyTimer?.segments ?? [{ name: 'Segment 1', duration: 4 }]
+  );
+  const [showingLoad, setShowingLoad] = useState(savedTimers.length > 1);
   // Total seconds elapsed across all segments; null when not running.
   const [elapsed, setElapsed] = useState<number | null>(null);
   const [paused, setPaused] = useState(false);
