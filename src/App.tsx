@@ -137,6 +137,10 @@ export function App(): preact.JSX.Element {
             newSegments[index] = { ...newSegments[index], duration: newDuration };
             setSegments(newSegments);
           }}
+          // A timer needs at least one segment to run.
+          onDelete={segments.length > 1
+            ? () => setSegments(segments.filter((_, i) => i !== index))
+            : undefined}
         />
       ))}
     </div>
