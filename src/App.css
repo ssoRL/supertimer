@@ -32,13 +32,13 @@ body {
   font-family: inherit;
 }
 
-.set-name-input {
+.timer-name-input {
   margin-top: 0.5rem;
   font-size: 1.25rem;
   text-align: center;
 }
 
-.timers {
+.segments {
   margin-top: 0.75rem;
   display: flex;
   flex-direction: column;
@@ -46,7 +46,7 @@ body {
   gap: 0.75rem;
 }
 
-.timer {
+.segment {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -79,7 +79,7 @@ body {
     gap: var(--controls-gap);
   }
 
-  .load-set {
+  .load-timer {
     flex: 1;
     display: flex;
     justify-content: space-between;
@@ -89,7 +89,7 @@ body {
     text-align: left;
   }
 
-  .set-summary {
+  .timer-summary {
     opacity: 0.6;
   }
 }

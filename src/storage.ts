@@ -1,56 +1,56 @@
-export type TimerConfig = {
+export type SegmentConfig = {
   name: string;
   duration: number;
 };
 
-export type TimerSet = {
+export type TimerConfig = {
   name: string;
-  timers: TimerConfig[];
+  segments: SegmentConfig[];
   savedAt: number;
 };
 
-const STORAGE_KEY = 'supertimer.timerSets';
+const STORAGE_KEY = 'supertimer.timers';
 
-function isTimerConfig(value: unknown): value is TimerConfig {
-  const v = value as TimerConfig;
+function isSegmentConfig(value: unknown): value is SegmentConfig {
+  const v = value as SegmentConfig;
   return typeof v === 'object' && v !== null
     && typeof v.name === 'string'
     && typeof v.duration === 'number';
 }
 
-function isTimerSet(value: unknown): value is TimerSet {
-  const v = value as TimerSet;
+function isTimerConfig(value: unknown): value is TimerConfig {
+  const v = value as TimerConfig;
   return typeof v === 'object' && v !== null
     && typeof v.name === 'string'
     && typeof v.savedAt === 'number'
-    && Array.isArray(v.timers) && v.timers.every(isTimerConfig);
+    && Array.isArray(v.segments) && v.segments.every(isSegmentConfig);
 }
 
-/** All saved timer sets. Corrupt or unrecognized entries are skipped. */
-export function loadTimerSets(): TimerSet[] {
+/** All saved timers. Corrupt or unrecognized entries are skipped. */
+export function loadTimers(): TimerConfig[] {
   try {
     const parsed: unknown = JSON.parse(localStorage.getItem(STORAGE_KEY) ?? '[]');
-    return Array.isArray(parsed) ? parsed.filter(isTimerSet) : [];
+    return Array.isArray(parsed) ? parsed.filter(isTimerConfig) : [];
   } catch {
     return [];
   }
 }
 
-function writeTimerSets(sets: TimerSet[]): void {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(sets));
+function writeTimers(timers: TimerConfig[]): void {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(timers));
 }
 
-/** Saves a set, overwriting any existing set with the same name. Returns the new list. */
-export function saveTimerSet(name: string, timers: TimerConfig[]): TimerSet[] {
-  const set: TimerSet = { name, timers, savedAt: Date.now() };
-  const sets = [...loadTimerSets().filter(s => s.name !== name), set];
-  writeTimerSets(sets);
-  return sets;
+/** Saves a timer, overwriting any existing timer with the same name. Returns the new list. */
+export function saveTimer(name: string, segments: SegmentConfig[]): TimerConfig[] {
+  const timer: TimerConfig = { name, segments, savedAt: Date.now() };
+  const timers = [...loadTimers().filter(t => t.name !== name), timer];
+  writeTimers(timers);
+  return timers;
 }
 
-/** Deletes the set with this name. Returns the new list. */
-export function deleteTimerSet(name: string): TimerSet[] {
-  const sets = loadTimerSets().filter(s => s.name !== name);
-  writeTimerSets(sets);
-  return sets;
+/** Deletes the timer with this name. Returns the new list. */
+export function deleteTimer(name: string): TimerConfig[] {
+  const timers = loadTimers().filter(t => t.name !== name);
+  writeTimers(timers);
+  return timers;
 }

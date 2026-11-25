@@ -1,25 +1,25 @@
-import { Timer } from "./Timer";
+import { Segment } from "./Segment";
 import { RunningTimer } from "./RunningTimer";
 import { LoadTimers } from "./LoadTimers";
 import { useEffect, useState } from 'preact/hooks';
 import { finishTicking, initAudio, pauseTicking, startTicking, stopTicking } from './sounds';
-import { deleteTimerSet, loadTimerSets, saveTimerSet, type TimerConfig } from './storage';
+import { deleteTimer, loadTimers, saveTimer, type SegmentConfig } from './storage';
 import './App.css';
 
 export function App(): preact.JSX.Element {
-  const [setName, setSetName] = useState('');
-  const [timers, setTimers] = useState<TimerConfig[]>([{ name: 'Timer 1', duration: 4 }]);
-  const [savedSets, setSavedSets] = useState(loadTimerSets);
+  const [timerName, setTimerName] = useState('');
+  const [segments, setSegments] = useState<SegmentConfig[]>([{ name: 'Segment 1', duration: 4 }]);
+  const [savedTimers, setSavedTimers] = useState(loadTimers);
   const [showingLoad, setShowingLoad] = useState(false);
-  // Total seconds elapsed across all timers; null when not running.
+  // Total seconds elapsed across all segments; null when not running.
   const [elapsed, setElapsed] = useState<number | null>(null);
   const [paused, setPaused] = useState(false);
 
-  const timerEnds = timers.reduce<number[]>(
-    (ends, timer) => [...ends, (ends.length > 0 ? ends[ends.length - 1] : 0) + timer.duration],
+  const segmentEnds = segments.reduce<number[]>(
+    (ends, segment) => [...ends, (ends.length > 0 ? ends[ends.length - 1] : 0) + segment.duration],
     []
   );
-  const totalDuration = timerEnds.length > 0 ? timerEnds[timerEnds.length - 1] : 0;
+  const totalDuration = segmentEnds.length > 0 ? segmentEnds[segmentEnds.length - 1] : 0;
 
   useEffect(() => {
     if (elapsed === null || paused) {
@@ -50,7 +50,7 @@ export function App(): preact.JSX.Element {
     } else if (paused) {
       pauseTicking();
     } else {
-      startTicking(elapsed, timerEnds);
+      startTicking(elapsed, segmentEnds);
     }
   }, [elapsed === null, paused]);
 
@@ -68,40 +68,40 @@ export function App(): preact.JSX.Element {
     setElapsed(null);
   };
 
-  const trimmedSetName = setName.trim();
-  const savedMatch = savedSets.find(set => set.name === trimmedSetName);
+  const trimmedTimerName = timerName.trim();
+  const savedMatch = savedTimers.find(timer => timer.name === trimmedTimerName);
   const isSaved = savedMatch !== undefined
-    && JSON.stringify(savedMatch.timers) === JSON.stringify(timers);
+    && JSON.stringify(savedMatch.segments) === JSON.stringify(segments);
 
   const save = () => {
-    setSetName(trimmedSetName);
-    setSavedSets(saveTimerSet(trimmedSetName, timers));
+    setTimerName(trimmedTimerName);
+    setSavedTimers(saveTimer(trimmedTimerName, segments));
   };
 
   if (showingLoad) {
     return <div className="app">
       <LoadTimers
-        timerSets={savedSets}
-        onLoad={set => {
-          setSetName(set.name);
-          setTimers(set.timers);
+        timers={savedTimers}
+        onLoad={timer => {
+          setTimerName(timer.name);
+          setSegments(timer.segments);
           setShowingLoad(false);
         }}
-        onDelete={set => setSavedSets(deleteTimerSet(set.name))}
+        onDelete={timer => setSavedTimers(deleteTimer(timer.name))}
         onBack={() => setShowingLoad(false)}
       />
     </div>;
   }
 
   if (elapsed !== null) {
-    const timerIndex = Math.max(0, timerEnds.findIndex(end => end > elapsed));
-    const currentTimer = timers[timerIndex];
-    const timerElapsed = timerIndex > 0 ? elapsed - timerEnds[timerIndex - 1] : elapsed;
+    const segmentIndex = Math.max(0, segmentEnds.findIndex(end => end > elapsed));
+    const currentSegment = segments[segmentIndex];
+    const segmentElapsed = segmentIndex > 0 ? elapsed - segmentEnds[segmentIndex - 1] : elapsed;
     return <div className="app">
       <RunningTimer
-        name={currentTimer.name}
-        duration={timerElapsed}
-        total={currentTimer.duration}
+        name={currentSegment.name}
+        duration={segmentElapsed}
+        total={currentSegment.duration}
         paused={paused}
         onTogglePause={() => setPaused(!paused)}
         onCancel={cancel}
@@ -111,36 +111,36 @@ export function App(): preact.JSX.Element {
 
   return <div className="app">
     <input
-      className="set-name-input"
+      className="timer-name-input"
       type="text"
-      placeholder="Timer set name"
-      value={setName}
-      onInput={e => setSetName(e.currentTarget.value)}
+      placeholder="Timer name"
+      value={timerName}
+      onInput={e => setTimerName(e.currentTarget.value)}
     />
-    <div className="timers">
-      {timers.map((timer, index) => (
-        <Timer
+    <div className="segments">
+      {segments.map((segment, index) => (
+        <Segment
           key={index}
-          name={timer.name}
+          name={segment.name}
           setName={(newName) => {
-            const newTimers = [...timers];
-            newTimers[index] = { ...newTimers[index], name: newName };
-            setTimers(newTimers);
+            const newSegments = [...segments];
+            newSegments[index] = { ...newSegments[index], name: newName };
+            setSegments(newSegments);
           }}
-          duration={timer.duration}
+          duration={segment.duration}
           setDuration={(newDuration) => {
-            const newTimers = [...timers];
-            newTimers[index] = { ...newTimers[index], duration: newDuration };
-            setTimers(newTimers);
+            const newSegments = [...segments];
+            newSegments[index] = { ...newSegments[index], duration: newDuration };
+            setSegments(newSegments);
           }}
         />
       ))}
     </div>
     <div className="controls">
       <button
-        onClick={() => setTimers([...timers, { name: `Timer ${timers.length + 1}`, duration: 4 }])}
+        onClick={() => setSegments([...segments, { name: `Segment ${segments.length + 1}`, duration: 4 }])}
       >
-        Add Timer
+        Add Segment
       </button>
       <button
         onClick={start}
@@ -151,14 +151,14 @@ export function App(): preact.JSX.Element {
     <div className="controls">
       <button
         onClick={save}
-        disabled={trimmedSetName === '' || isSaved}
-        title={trimmedSetName === '' ? 'Name this timer set to save it' : undefined}
+        disabled={trimmedTimerName === '' || isSaved}
+        title={trimmedTimerName === '' ? 'Name this timer to save it' : undefined}
       >
         {isSaved ? 'Saved' : 'Save'}
       </button>
       <button
         onClick={() => setShowingLoad(true)}
-        disabled={savedSets.length === 0}
+        disabled={savedTimers.length === 0}
       >
         Load
       </button>

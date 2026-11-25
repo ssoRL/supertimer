@@ -1,12 +1,12 @@
-interface TimerProps {
+interface SegmentProps {
     name: string;
     setName: (name: string) => void;
     duration: number;
     setDuration: (duration: number) => void;
 }
 
-export function Timer({ name, setName, duration, setDuration }: TimerProps): preact.JSX.Element {
-    return <div className="timer">
+export function Segment({ name, setName, duration, setDuration }: SegmentProps): preact.JSX.Element {
+    return <div className="segment">
         <input
             type="text"
             value={name}

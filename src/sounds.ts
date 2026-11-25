@@ -2,7 +2,7 @@ import * as Tone from 'tone';
 
 // Tick on whole seconds, tock on half seconds.
 const BEAT_SECONDS = 0.5;
-// Number of hollow count beats before each change of timer and before the end.
+// Number of hollow count beats before each change of segment and before the end.
 const COUNT_BEATS = 4;
 
 // Tolerance for comparing float times.
@@ -89,16 +89,16 @@ type SoundEvent = { time: number; play: (time: number) => void };
 
 /**
  * Builds every sound for a run, in run time (seconds from the start of the
- * first timer). Before each change from one timer to the next, and before the
+ * first segment). Before each change from one segment to the next, and before the
  * final end, there are four hollow count beats; each change gets a chime and
  * the final end gets a gong. Ticks play throughout, aligned to the start of
- * the current timer, layered with the other sounds.
+ * the current segment, layered with the other sounds.
  */
-function buildEvents(timerEnds: number[]): SoundEvent[] {
-  // Distinct boundaries: each timer start plus the final end. Zero-length
-  // timers collapse into their neighbours.
+function buildEvents(segmentEnds: number[]): SoundEvent[] {
+  // Distinct boundaries: each segment start plus the final end. Zero-length
+  // segments collapse into their neighbours.
   const boundaries: number[] = [];
-  for (const b of [0, ...timerEnds]) {
+  for (const b of [0, ...segmentEnds]) {
     if (boundaries.length === 0 || b > boundaries[boundaries.length - 1] + EPSILON) {
       boundaries.push(b);
     }
@@ -108,7 +108,7 @@ function buildEvents(timerEnds: number[]): SoundEvent[] {
   boundaries.forEach((boundary, i) => {
     // The very start of the run is silent; every later boundary is counted in.
     if (i > 0) {
-      // Count beats, kept within the previous timer so they never collide
+      // Count beats, kept within the previous segment so they never collide
       // with its start chime.
       for (let beat = COUNT_BEATS; beat >= 1; beat--) {
         const time = boundary - beat * BEAT_SECONDS;
@@ -124,7 +124,7 @@ function buildEvents(timerEnds: number[]): SoundEvent[] {
       events.push({ time: boundary, play: t => chimeSynth?.triggerAttackRelease(['C6', 'G6'], 0.5, t) });
     }
 
-    // Ticks run through the whole timer, alongside the count beats and
+    // Ticks run through the whole segment, alongside the count beats and
     // chime. They stop before the next boundary, so the gong plays alone.
     const next = boundaries[i + 1];
     if (next === undefined) {
@@ -144,15 +144,15 @@ function buildEvents(timerEnds: number[]): SoundEvent[] {
 
 /**
  * Starts (or resumes) the run's sounds from `fromSeconds` of run time.
- * `timerEnds` are the cumulative end
- * times of each timer. Sounds are scheduled on the audio clock, so they stay
+ * `segmentEnds` are the cumulative end
+ * times of each segment. Sounds are scheduled on the audio clock, so they stay
  * steady even if the main thread stalls or the tab is in the background.
  */
-export function startTicking(fromSeconds: number, timerEnds: number[]): void {
+export function startTicking(fromSeconds: number, segmentEnds: number[]): void {
   const transport = Tone.getTransport();
   if (eventIds.length === 0) {
     gongPlayed = false;
-    eventIds = buildEvents(timerEnds).map(({ time, play }) => transport.schedule(play, time));
+    eventIds = buildEvents(segmentEnds).map(({ time, play }) => transport.schedule(play, time));
   }
   transport.seconds = fromSeconds;
   transport.start();
